@@ -1,51 +1,234 @@
-{% extends 'layout/base.html' %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thêm Quy Định và Quản lý Chuyến Bay</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .error-message {
+            color: #ff4d4d;
+            font-weight: bold;
+        }
+        .success-message {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+    <script>
+        function toggleTable(id) {
+            var table = document.getElementById(id);
+            if (table.style.display === "none") {
+                table.style.display = "block";
+            } else {
+                table.style.display = "none";
+            }
+        }
 
-{% block content %}
-<h1 class="text-center mt-2 mb-1">THAY ĐỔI QUY ĐỊNH</h1>
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-            <div class="alert alert-{{ category }}">{{ message }}</div>
-        {% endfor %}
-    {% endif %}
-{% endwith %}
-<form method="post">
-    <br><br>
-    <table class="table table-dark">
-        <thead>
-        <tr>
-            <th>Thời gian bay tối thiểu</th>
-            <th>Số sân bay trung gian tối đa</th>
-            <th>Thời gian dừng tối thiểu (Sân bay trung gian)</th>
-            <th>Thời gian dừng tối đa (Sân bay trung gian)</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td><input value="{{ quy_dinh.thoi_gian_bay_toi_thieu }}" type="number" min="0.1" step="0.1" name="thoi_gian_bay"/> Giờ</td>
-            <td><input value="{{ quy_dinh.san_bay_trung_gian_toi_da }}" type="number" min="1" name="sbtg_toi_da"/></td>
-            <td><input value="{{ quy_dinh.thoi_gian_dung_toi_thieu }}" type="number" min="0.1" step="0.1" name="thoi_gian_dung_toi_thieu"/> Giờ</td>
-            <td><input value="{{ quy_dinh.thoi_gian_dung_toi_da }}" type="number" min="0.1" step="0.1" name="thoi_gian_dung_toi_da"/> Giờ</td>
-        </tr>
-        </tbody>
-    </table>
+        function editRule(id, tg_bay_toi_thieu, sbtg_toi_da, tg_dung_toi_thieu, tg_dung_toi_da, thoi_gian_ban, thoi_gian_mua, h1_seat_count, h2_seat_count, h1_price, h2_price) {
+            document.getElementById('thoi_gian_bay').value = tg_bay_toi_thieu;
+            document.getElementById('sbtg_toi_da').value = sbtg_toi_da;
+            document.getElementById('thoi_gian_dung_toi_thieu').value = tg_dung_toi_thieu;
+            document.getElementById('thoi_gian_dung_toi_da').value = tg_dung_toi_da;
+            document.getElementById('thoi_gian_ban').value = thoi_gian_ban;
+            document.getElementById('thoi_gian_mua').value = thoi_gian_mua;
+            document.getElementById('h1_seat_count').value = h1_seat_count;
+            document.getElementById('h2_seat_count').value = h2_seat_count;
+            document.getElementById('h1_price').value = h1_price;
+            document.getElementById('h2_price').value = h2_price;
+            document.getElementById('edit_id').value = id;
+        }
 
-    <table class="table table-dark">
-        <thead>
-        <tr>
-            <th>Thời gian bán vé (Nhân viên)</th>
-            <th>Thời gian mua vé (Người dùng)</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td><input value="{{ quy_dinh.gio_ban_toi_da }}" type="number" min="1" max="24" name="thoi_gian_ban"/> Giờ</td>
-            <td><input value="{{ quy_dinh.gio_mua_toi_da }}" type="number" min="1" max="24" name="thoi_gian_mua"/> Giờ</td>
-        </tr>
-        </tbody>
-    </table>
-    <div class="text-center">
-        <button type="submit" class="btn btn-primary w-25 h-50"><h3>Xác nhận</h3></button>
+        function editFlight(id, flight_name, departure_airport, arrival_airport, status) {
+            document.getElementById('flight_name').value = flight_name;
+            document.getElementById('departure_airport').value = departure_airport;
+            document.getElementById('arrival_airport').value = arrival_airport;
+            document.getElementById('status').value = status;
+            document.getElementById('edit_flight_id').value = id;
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <!-- Thêm Quy Định Mới -->
+        <h2>Thêm Quy Định Mới</h2>
+        <form method="POST">
+            <label for="thoi_gian_bay">Thời gian bay tối thiểu (giờ):</label>
+            <input type="number" name="thoi_gian_bay" id="thoi_gian_bay" required><br><br>
+
+            <label for="sbtg_toi_da">Sân bay trung gian tối đa:</label>
+            <input type="number" name="sbtg_toi_da" id="sbtg_toi_da" required><br><br>
+
+            <label for="thoi_gian_dung_toi_thieu">Thời gian dừng tối thiểu (giờ):</label>
+            <input type="number" name="thoi_gian_dung_toi_thieu" id="thoi_gian_dung_toi_thieu" required><br><br>
+
+            <label for="thoi_gian_dung_toi_da">Thời gian dừng tối đa (giờ):</label>
+            <input type="number" name="thoi_gian_dung_toi_da" id="thoi_gian_dung_toi_da" required><br><br>
+
+            <label for="thoi_gian_ban">Thời gian bán vé (giờ):</label>
+            <input type="number" name="thoi_gian_ban" id="thoi_gian_ban" required><br><br>
+
+            <label for="thoi_gian_mua">Thời gian mua vé (giờ):</label>
+            <input type="number" name="thoi_gian_mua" id="thoi_gian_mua" required><br><br>
+
+            <label for="h1_seat_count">Số lượng vé hạng 1:</label>
+            <input type="number" name="h1_seat_count" id="h1_seat_count" required><br><br>
+
+            <label for="h2_seat_count">Số lượng vé hạng 2:</label>
+            <input type="number" name="h2_seat_count" id="h2_seat_count" required><br><br>
+
+            <label for="h1_price">Đơn giá vé hạng 1 (VND):</label>
+            <input type="number" name="h1_price" id="h1_price" required><br><br>
+
+            <label for="h2_price">Đơn giá vé hạng 2 (VND):</label>
+            <input type="number" name="h2_price" id="h2_price" required><br><br>
+
+            <input type="hidden" name="edit_id" id="edit_id">
+            <button type="submit" class="btn" name="add_rule">Thêm Quy Định</button>
+            <button type="submit" class="btn" name="edit_rule">Cập nhật Quy Định</button>
+        </form>
+
+        {% if msg %}
+            <div class="success-message">
+                <p>{{ msg }}</p>
+            </div>
+        {% endif %}
+
+        <button class="btn" onclick="toggleTable('quyDinhTable')">Hiển Thị Quy Định Hiện Có</button>
+        <h3>Các Quy Định Hiện Có</h3>
+        <table id="quyDinhTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th>Thời gian bay tối thiểu (giờ)</th>
+                    <th>Sân bay trung gian tối đa</th>
+                    <th>Thời gian dừng tối thiểu (giờ)</th>
+                    <th>Thời gian dừng tối đa (giờ)</th>
+                    <th>Thời gian bán vé (giờ)</th>
+                    <th>Thời gian mua vé (giờ)</th>
+                    <th>Số lượng vé hạng 1</th>
+                    <th>Số lượng vé hạng 2</th>
+                    <th>Đơn giá vé hạng 1 (VND)</th>
+                    <th>Đơn giá vé hạng 2 (VND)</th>
+                    <th>Chỉnh sửa</th>
+                    <th>Xóa</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for quy_dinh in quy_dinh_list %}
+                    <tr>
+                        <td>{{ quy_dinh.thoi_gian_bay_toi_thieu }} giờ</td>
+                        <td>{{ quy_dinh.sbtg_toi_da }}</td>
+                        <td>{{ quy_dinh.thoi_gian_dung_toi_thieu }} giờ</td>
+                        <td>{{ quy_dinh.thoi_gian_dung_toi_da }} giờ</td>
+                        <td>{{ quy_dinh.thoi_gian_ban }} giờ</td>
+                        <td>{{ quy_dinh.thoi_gian_mua }} giờ</td>
+                        <td>{{ quy_dinh.h1_seat_count }}</td>
+                        <td>{{ quy_dinh.h2_seat_count }}</td>
+                        <td>{{ quy_dinh.h1_price }} VND</td>
+                        <td>{{ quy_dinh.h2_price }} VND</td>
+                        <td><button class="btn" onclick="editRule({{ quy_dinh.id }}, {{ quy_dinh.thoi_gian_bay_toi_thieu }}, {{ quy_dinh.sbtg_toi_da }}, {{ quy_dinh.thoi_gian_dung_toi_thieu }}, {{ quy_dinh.thoi_gian_dung_toi_da }}, {{ quy_dinh.thoi_gian_ban }}, {{ quy_dinh.thoi_gian_mua }}, {{ quy_dinh.h1_seat_count }}, {{ quy_dinh.h2_seat_count }}, {{ quy_dinh.h1_price }}, {{ quy_dinh.h2_price }})">Chỉnh sửa</button></td>
+                        <td><a href="/delete_rule/{{ quy_dinh.id }}" class="btn" onclick="return confirm('Bạn có chắc chắn muốn xóa quy định này?')">Xóa</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Quản lý Chuyến Bay -->
+        <button class="btn" onclick="toggleTable('flightManagementTable')">Quản Lý Chuyến Bay</button>
+        <h3>Quản Lý Chuyến Bay</h3>
+        <table id="flightManagementTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th>Tên Chuyến Bay</th>
+                    <th>Sân Bay Đi</th>
+                    <th>Sân Bay Đến</th>
+                    <th>Trạng Thái</th>
+                    <th>Chỉnh sửa</th>
+                    <th>Xóa</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if flight_list %}
+                    {% for flight in flight_list %}
+                        <tr>
+                            <td>{{ flight.ten_chuyen_bay }}</td>
+                            <td>{{ flight.san_bay_di.name }}</td>
+                            <td>{{ flight.san_bay_den.name }}</td>
+                            <td>{{ 'Hoạt động' if flight.trang_thai else 'Ngừng hoạt động' }}</td>
+                            <td><button class="btn" onclick="editFlight({{ flight.id }}, '{{ flight.ten_chuyen_bay }}', '{{ flight.san_bay_di.name }}', '{{ flight.san_bay_den.name }}', '{{ flight.trang_thai }}')">Chỉnh sửa</button></td>
+                            <td><a href="/delete_flight/{{ flight.id }}" class="btn" onclick="return confirm('Bạn có chắc chắn muốn xóa chuyến bay này?')">Xóa</a></td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="6">Không có chuyến bay nào.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+        <!-- Form Thêm/Sửa Chuyến Bay -->
+        <form method="POST">
+            <label for="flight_name">Tên Chuyến Bay:</label>
+            <input type="text" name="flight_name" id="flight_name" required><br><br>
+
+            <label for="departure_airport">Sân Bay Đi:</label>
+            <input type="text" name="departure_airport" id="departure_airport" required><br><br>
+
+            <label for="arrival_airport">Sân Bay Đến:</label>
+            <input type="text" name="arrival_airport" id="arrival_airport" required><br><br>
+
+            <label for="status">Trạng Thái:</label>
+            <select name="status" id="status" required>
+                <option value="true">Hoạt động</option>
+                <option value="false">Ngừng hoạt động</option>
+            </select><br><br>
+
+            <input type="hidden" name="edit_flight_id" id="edit_flight_id">
+
+            <button type="submit" class="btn" name="add_flight">Thêm Chuyến Bay</button>
+            <button type="submit" class="btn" name="edit_flight">Cập nhật Chuyến Bay</button>
+        </form>
     </div>
-</form>
-{% endblock %}
+</body>
+</html>
